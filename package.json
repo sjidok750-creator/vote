@@ -6,14 +6,14 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "db:deploy": "prisma migrate deploy",
+    "db:deploy": "prisma db push --accept-data-loss",
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "better-sqlite3": "^12.10.0",
     "next": "16.2.7",
+    "pg": "^8.21.0",
     "prisma": "^7.8.0",
     "qrcode": "^1.5.4",
     "react": "19.2.4",

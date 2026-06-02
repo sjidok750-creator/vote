@@ -44,14 +44,16 @@
 
 ## 🛠 기술 스택
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS · Prisma + SQLite · PWA
+Next.js 16 (App Router) · TypeScript · Tailwind CSS · Prisma + PostgreSQL · PWA
 
 ## 💻 로컬 실행
 
+PostgreSQL 한 개가 필요합니다. (로컬은 Docker로 간단히: `docker run -e POSTGRES_PASSWORD=pw -p 5432:5432 -d postgres`)
+
 ```bash
 npm install
-cp .env.example .env          # 필요 시 값 수정
-npx prisma migrate dev        # DB 초기화
+cp .env.example .env          # DATABASE_URL 을 본인 Postgres 주소로 설정
+npm run db:deploy             # 스키마 동기화(prisma db push)
 npm run dev                   # http://localhost:3000
 ```
 
@@ -60,8 +62,8 @@ npm run dev                   # http://localhost:3000
 이 저장소에는 `Dockerfile`과 `render.yaml`이 포함되어 있어 **자동 배포**됩니다.
 
 1. [render.com](https://render.com) 가입 후 **New ▸ Blueprint** 선택
-2. 이 GitHub 저장소를 연결하면 `render.yaml`이 자동 적용됩니다
-   - 영구 디스크(`/data`)에 SQLite 데이터가 보존됩니다
+2. 이 GitHub 저장소(브랜치 `main`)를 연결하면 `render.yaml`이 자동 적용됩니다
+   - **무료 PostgreSQL** 데이터베이스가 함께 생성되어 자동 연결됩니다 (무료 플랜은 영구 디스크 미지원이라 DB로 데이터를 보존)
    - `VOTE_SALT`는 자동으로 안전한 값이 생성됩니다
 3. 배포가 끝나면 `https://...onrender.com` 주소가 발급됩니다 → **이 주소를 공유**하세요
 
@@ -71,7 +73,7 @@ npm run dev                   # http://localhost:3000
 
 | 변수 | 설명 |
 |---|---|
-| `DATABASE_URL` | SQLite 경로. 운영 시 영구 디스크 경로(예: `file:/data/prod.db`) |
+| `DATABASE_URL` | PostgreSQL 접속 주소 (Render Blueprint 가 자동 주입) |
 | `VOTE_SALT` | 익명 해시용 비밀 솔트 (긴 임의 문자열 권장) |
 
 ## 🔐 익명성 & 중복방지에 대하여
