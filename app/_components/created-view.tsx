@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import KakaoShare from "./kakao-share";
 
 export default function CreatedView({
   slug,
@@ -16,6 +17,7 @@ export default function CreatedView({
   const [qr, setQr] = useState("");
 
   const voteUrl = origin ? `${origin}/v/${slug}` : "";
+  const voteImageUrl = origin ? `${origin}/v/${slug}/opengraph-image` : "";
   const adminUrl = origin ? `${origin}/r/${adminToken}` : "";
 
   useEffect(() => {
@@ -72,13 +74,25 @@ export default function CreatedView({
         <CopyField value={voteUrl} />
 
         <div className="grid grid-cols-2 gap-2">
+          <KakaoShare
+            title={`🗳️ ${title}`}
+            description="익명 투표 · 결과는 관리자만 확인합니다"
+            imageUrl={voteImageUrl}
+            link={voteUrl}
+            buttonLabel="투표하기"
+          />
           <button className="btn btn-primary" onClick={share}>
             공유하기
           </button>
-          <a className="btn btn-ghost" href={voteUrl} target="_blank" rel="noopener noreferrer">
-            투표화면 미리보기
-          </a>
         </div>
+        <a
+          className="btn btn-ghost w-full"
+          href={voteUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          투표화면 미리보기
+        </a>
         <p className="text-center text-xs text-soft">
           참여자는 투표만 하고 결과는 볼 수 없습니다.
         </p>

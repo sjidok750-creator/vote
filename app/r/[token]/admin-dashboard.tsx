@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import ResultsChart from "@/app/_components/results-chart";
+import KakaoShare from "@/app/_components/kakao-share";
 
 type Results = {
   slug: string;
@@ -10,6 +12,7 @@ type Results = {
   maxChoices: number | null;
   dupMode: string;
   showResults: boolean;
+  resultsShared: boolean;
   isClosed: boolean;
   closesAt: string | null;
   createdAt: string;
@@ -23,8 +26,6 @@ const DUP_LABEL: Record<string, string> = {
   strict: "엄격 (기기+IP)",
   none: "중복 허용",
 };
-
-const PALETTE = ["#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e", "#fb923c", "#22d3ee"];
 
 export default function AdminDashboard({ token }: { token: string }) {
   const [data, setData] = useState<Results | null>(null);
@@ -91,6 +92,32 @@ export default function AdminDashboard({ token }: { token: string }) {
     URL.revokeObjectURL(url);
   }
 
+  async function saveResultImage() {
+    if (!data) return;
+    const res = await fetch(`/api/admin/${token}/result-image`);
+    const blob = await res.blob();
+    const file = new File([blob], `${data.title}_결과.png`, { type: "image/png" });
+    // 모바일에서 이미지 자체를 공유할 수 있으면 공유, 아니면 다운로드
+    if (navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: `${data.title} 결과` });
+        return;
+      } catch {
+        /* 취소 시 다운로드로 진행 */
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${data.title}_결과.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyResultLink() {
+    await navigator.clipboard.writeText(`${window.location.origin}/result/${data!.slug}`);
+  }
+
   if (notFound) {
     return (
       <main className="grid min-h-dvh place-items-center px-5">
@@ -112,10 +139,9 @@ export default function AdminDashboard({ token }: { token: string }) {
   }
 
   const total = data.totalBallots;
-  const maxCount = Math.max(1, ...data.options.map((o) => o.count));
-  const sorted = data.options.slice().sort((a, b) => b.count - a.count);
-  const leader = sorted[0];
   const voteUrl = origin ? `${origin}/v/${data.slug}` : "";
+  const resultUrl = origin ? `${origin}/result/${data.slug}` : "";
+  const resultImageUrl = origin ? `${origin}/api/admin/${token}/result-image` : "";
 
   return (
     <main className="mx-auto w-full max-w-2xl px-5 py-9">
@@ -155,34 +181,7 @@ export default function AdminDashboard({ token }: { token: string }) {
         {total === 0 ? (
           <p className="py-6 text-center text-soft">아직 참여자가 없습니다. 링크를 공유해 보세요!</p>
         ) : (
-          <div className="space-y-4">
-            {sorted.map((o, i) => {
-              const pct = total ? Math.round((o.count / total) * 100) : 0;
-              const isLeader = o.id === leader?.id && o.count > 0;
-              return (
-                <div key={o.id}>
-                  <div className="mb-1.5 flex items-baseline justify-between gap-2">
-                    <span className="truncate font-semibold">
-                      {isLeader && "👑 "}
-                      {o.label}
-                    </span>
-                    <span className="shrink-0 text-sm font-bold text-soft">
-                      {o.count}표 · {pct}%
-                    </span>
-                  </div>
-                  <div className="h-4 overflow-hidden rounded-full bg-[var(--border)]">
-                    <div
-                      className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${(o.count / maxCount) * 100}%`,
-                        background: PALETTE[i % PALETTE.length],
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <ResultsChart options={data.options} total={total} />
         )}
 
         <button onClick={exportCsv} className="btn btn-ghost w-full text-sm" disabled={total === 0}>
@@ -206,8 +205,54 @@ export default function AdminDashboard({ token }: { token: string }) {
         </div>
       </section>
 
+      {/* 결과 공유 */}
+      <section className="card animate-pop mt-5 space-y-4 p-6" style={{ animationDelay: "0.14s" }}>
+        <h2 className="font-bold">결과 공유</h2>
+
+        {/* 이미지로 저장/공유 */}
+        <div className="grid grid-cols-2 gap-2">
+          <button onClick={saveResultImage} disabled={total === 0} className="btn btn-primary text-sm">
+            🖼️ 결과 이미지 저장
+          </button>
+          <KakaoShare
+            title={`📊 ${data.title} · 결과`}
+            description={`총 ${total}명 참여`}
+            imageUrl={origin ? `${origin}/result/${data.slug}/opengraph-image` : ""}
+            link={resultUrl}
+            buttonLabel="결과 보기"
+          />
+        </div>
+
+        {/* 공개 결과 페이지 */}
+        <Row
+          label="결과 페이지 공개"
+          hint={
+            data.resultsShared
+              ? "누구나 결과 페이지를 볼 수 있습니다."
+              : "켜면 아래 링크로 결과를 공유할 수 있습니다."
+          }
+        >
+          <Toggle
+            checked={data.resultsShared}
+            disabled={busy}
+            onChange={(v) => patch({ resultsShared: v })}
+          />
+        </Row>
+
+        {data.resultsShared && (
+          <div className="flex items-stretch gap-2">
+            <div className="flex min-w-0 flex-1 items-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2.5 font-mono text-xs">
+              <span className="truncate">{resultUrl || "…"}</span>
+            </div>
+            <button className="btn btn-ghost shrink-0 px-4 py-2.5 text-sm" onClick={copyResultLink}>
+              복사
+            </button>
+          </div>
+        )}
+      </section>
+
       {/* 관리 */}
-      <section className="card animate-pop mt-5 space-y-4 p-6" style={{ animationDelay: "0.16s" }}>
+      <section className="card animate-pop mt-5 space-y-4 p-6" style={{ animationDelay: "0.18s" }}>
         <h2 className="font-bold">투표 관리</h2>
 
         <Row

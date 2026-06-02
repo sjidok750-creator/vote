@@ -19,7 +19,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const poll = await getPoll(slug);
-  return { title: poll ? poll.title : "투표" };
+  const title = poll ? poll.title : "투표";
+  const description = poll?.description?.trim()
+    ? poll.description
+    : "지금 참여하세요 · 익명 투표 · 결과는 관리자만 확인합니다";
+  return {
+    title,
+    description,
+    openGraph: {
+      title: `🗳️ ${title}`,
+      description,
+      type: "website",
+      url: `/v/${slug}`,
+    },
+    twitter: { card: "summary_large_image", title: `🗳️ ${title}`, description },
+  };
 }
 
 export default async function VotePage({

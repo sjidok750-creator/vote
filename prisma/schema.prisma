@@ -22,6 +22,7 @@ model Poll {
   maxChoices    Int? // 복수선택 시 최대 선택 개수(null = 제한없음)
   dupMode       String  @default("device") // none | device | ip | strict
   showResults   Boolean @default(false) // 투표자에게 결과 공개 여부(기본 비공개)
+  resultsShared Boolean @default(false) // 공유용 결과 페이지(/result/[slug]) 공개 여부
   isClosed      Boolean @default(false)
   closesAt      DateTime?
 

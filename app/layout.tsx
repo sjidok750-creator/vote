@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerRegister from "./service-worker-register";
+import { getBaseUrl } from "@/lib/base-url";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -11,6 +12,7 @@ const geistSans = Geist({
 const APP_NAME = "비밀투표";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getBaseUrl()),
   applicationName: APP_NAME,
   title: {
     default: "비밀투표 · VoteSecret",

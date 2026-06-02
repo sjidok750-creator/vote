@@ -34,6 +34,7 @@ export async function GET(
     maxChoices: poll.maxChoices,
     dupMode: poll.dupMode,
     showResults: poll.showResults,
+    resultsShared: poll.resultsShared,
     isClosed: poll.isClosed,
     closesAt: poll.closesAt,
     createdAt: poll.createdAt,
@@ -71,6 +72,7 @@ export async function PATCH(
   const data: Record<string, unknown> = {};
   if (typeof body.isClosed === "boolean") data.isClosed = body.isClosed;
   if (typeof body.showResults === "boolean") data.showResults = body.showResults;
+  if (typeof body.resultsShared === "boolean") data.resultsShared = body.resultsShared;
   if (typeof body.dupMode === "string") data.dupMode = normalizeDupMode(body.dupMode);
 
   if (Object.keys(data).length === 0)
