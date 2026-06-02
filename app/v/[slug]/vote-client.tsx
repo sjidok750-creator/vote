@@ -192,7 +192,17 @@ export default function VoteClient({
         >
           {submitting ? "제출 중…" : "투표하기"}
         </button>
-        <p className="mt-3 text-center text-xs text-soft">🔒 익명 투표 · 결과는 관리자만 확인합니다</p>
+        <div className="mt-4 rounded-2xl border border-brand-200 bg-brand-50 px-4 py-3.5 text-center">
+          <p className="text-sm font-bold text-brand-700">🔒 완전 익명 투표</p>
+          <p className="mt-1.5 text-xs leading-relaxed text-soft">
+            개개인의 투표 내용은 <b className="text-brand-700">암호화되어</b> 보관되며,
+            <br />
+            누가 무엇을 선택했는지는 <b className="text-brand-700">관리자조차 확인할 수 없습니다.</b>
+          </p>
+          <p className="mt-1.5 text-xs text-soft">
+            관리자는 항목별 <b>합계 결과</b>만 볼 수 있어요.
+          </p>
+        </div>
       </div>
     </main>
   );
@@ -250,7 +260,8 @@ function ThanksScreen({ slug, showResults }: { slug: string; showResults: boolea
         <h1 className="text-xl font-extrabold">투표 완료!</h1>
         <p className="mt-2 text-soft">
           소중한 한 표 감사합니다.
-          {!showResults && " 결과는 관리자만 확인할 수 있어요."}
+          {!showResults &&
+            " 내 선택은 암호화되어, 누가 무엇을 골랐는지는 아무도 확인할 수 없어요."}
         </p>
 
         {showResults && results && (

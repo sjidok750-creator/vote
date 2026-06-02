@@ -22,7 +22,7 @@ export async function generateMetadata({
   const title = poll ? poll.title : "투표";
   const description = poll?.description?.trim()
     ? poll.description
-    : "지금 참여하세요 · 익명 투표 · 결과는 관리자만 확인합니다";
+    : "지금 참여하세요 · 완전 익명 · 내 선택은 암호화되어 아무도 알 수 없어요";
   return {
     title,
     description,
