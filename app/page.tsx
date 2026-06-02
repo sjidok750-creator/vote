@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import CreatedView from "./_components/created-view";
+import MyPollsList from "./_components/my-polls-list";
 
 type DupMode = "device" | "ip" | "strict" | "none";
 
@@ -86,6 +87,8 @@ export default function Home() {
           제목과 항목을 만들고 링크를 공유하세요. 참여자는 투표만 하고 결과는 볼 수 없습니다.
         </p>
       </header>
+
+      <MyPollsList />
 
       <div className="card animate-pop space-y-6 p-6" style={{ animationDelay: "0.05s" }}>
         {/* 제목 */}

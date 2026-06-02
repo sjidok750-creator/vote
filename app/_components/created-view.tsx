@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import KakaoShare from "./kakao-share";
+import { saveMyPoll } from "../_lib/my-polls";
 
 export default function CreatedView({
   slug,
@@ -23,6 +24,11 @@ export default function CreatedView({
   useEffect(() => {
     setOrigin(window.location.origin);
   }, []);
+
+  // 이 기기에 투표를 기록해 두어 나중에 메인 화면에서 다시 찾을 수 있게 함
+  useEffect(() => {
+    saveMyPoll({ slug, adminToken, title, createdAt: new Date().toISOString() });
+  }, [slug, adminToken, title]);
 
   useEffect(() => {
     if (!voteUrl) return;
