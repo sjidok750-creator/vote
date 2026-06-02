@@ -1,0 +1,67 @@
+// VoteSecret — 비밀투표 PWA
+// 결과는 관리자만, 투표자는 익명. 누가 무엇을 골랐는지는 저장하지 않습니다.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Poll {
+  id          String   @id @default(cuid())
+  slug        String   @unique // 공유용 공개 링크 식별자
+  adminToken  String   @unique // 관리자 전용 비밀 키
+  title       String
+  description String?
+
+  // 설정
+  allowMultiple Boolean @default(false) // 복수선택 허용
+  maxChoices    Int? // 복수선택 시 최대 선택 개수(null = 제한없음)
+  dupMode       String  @default("device") // none | device | ip | strict
+  showResults   Boolean @default(false) // 투표자에게 결과 공개 여부(기본 비공개)
+  isClosed      Boolean @default(false)
+  closesAt      DateTime?
+
+  options   Option[]
+  ballots   Ballot[]
+  createdAt DateTime @default(now())
+}
+
+model Option {
+  id       String @id @default(cuid())
+  pollId   String
+  poll     Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  label    String
+  position Int    @default(0)
+  votes    Vote[]
+
+  @@index([pollId])
+}
+
+// 한 사람의 1회 제출(익명). 중복투표 방지의 기준 단위.
+model Ballot {
+  id        String   @id @default(cuid())
+  pollId    String
+  poll      Poll     @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  deviceKey String // 기기ID 해시(익명)
+  ipKey     String // IP 해시(익명)
+  votes     Vote[]
+  createdAt DateTime @default(now())
+
+  @@index([pollId])
+  @@index([pollId, deviceKey])
+  @@index([pollId, ipKey])
+}
+
+model Vote {
+  id       String @id @default(cuid())
+  ballotId String
+  ballot   Ballot @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  optionId String
+  option   Option @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@index([optionId])
+}
